@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+usage () {
+    echo "USAGE: $0 path/to/wallpapers [w] [h]"
+    exit 1
+}
+
+if [ "$#" != '3' ]; then
+    usage
+fi
+
+set -euo pipefail
+
+if ! command -v imgp > /dev/null 1>&2 ; then
+    printf "%s\n" "imgp is not installed."
+    exit 1
+fi
+
+WALLDIR="$(readlink -f ${1})"
+IMGW="${2}"
+IMGH="${3}"
+
+SAVEDIR="${WALLDIR}-${IMGW}x${IMGH}"
+
+imgp -acerpq 95 -x "${IMGW}x${IMGH}" "$WALLDIR"
+find "$WALLDIR" -iname '*_IMGP.jpg' | while read fn; do
+    fp="$(readlink -f ${fn})"
+    dest="${SAVEDIR}${fp##"$WALLDIR"}"
+    mkdir -p "$(dirname "$dest")"
+    mv -v "$fn" "$dest"
+done
